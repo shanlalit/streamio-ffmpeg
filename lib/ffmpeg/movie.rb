@@ -107,6 +107,10 @@ module FFMPEG
       Transcoder.new(self, output_file, options.merge(screenshot: true), transcoder_options).run &block
     end
 
+    def trim(output_file, start_trim, end_trim, &block)
+      Transcoder.new(self, output_file, start_trim, end_trim).run_trim &block
+    end
+
     protected
     def aspect_from_dar
       return nil unless dar

@@ -4,6 +4,15 @@ require 'shellwords'
 module FFMPEG
   class Transcoder
     @@timeout = 30
+    @@trim_video = false
+
+    def self.trim_video=(trim)
+      @@trim_video = trim
+    end
+
+    def self.trim_video
+      @@trim_video
+    end
 
     def self.timeout=(time)
       @@timeout = time
@@ -54,7 +63,11 @@ module FFMPEG
     private
     # frame= 4855 fps= 46 q=31.0 size=   45306kB time=00:02:42.28 bitrate=2287.0kbits/
     def transcode_movie
-      @command = "#{FFMPEG.ffmpeg_binary} -y -i #{Shellwords.escape(@movie.path)} #{@raw_options} #{Shellwords.escape(@output_file)}"
+      if @@trim_video
+        @command = "#{FFMPEG.ffmpeg_binary} -ss #{@raw_options.seek_time} -i #{Shellwords.escape(@movie.path)} -t #{@raw_options.duration} -acodec copy -vcodec copy -async 1 -y #{Shellwords.escape(@output_file)}"
+      else
+        @command = "#{FFMPEG.ffmpeg_binary} -y -i #{Shellwords.escape(@movie.path)} #{@raw_options} #{Shellwords.escape(@output_file)}"        
+      end
       FFMPEG.logger.info("Running transcoding...\n#{@command}\n")
       @output = ""
 
